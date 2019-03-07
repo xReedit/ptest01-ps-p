@@ -2,6 +2,7 @@ let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null
 
 $(document).ready(function() {
 	ultimoId=0;
+	xUpdateEstructuras();
 	setTimeout(() => {
 		$("body").addClass("loaded");
 		// xInitPrintServer();
@@ -91,8 +92,10 @@ function xSendPrint() {
 		if ( xPausaError ) return;
 
 		const _id = x.idprint_server_detalle;
-		const _detalle_json = JSON.parse(x.detalle_json);
-		const _nomUs = _detalle_json.Array_enca.nom_us.split(' ')[0]; // -> 
+		const _detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}')); //JSON.parse(x.detalle_json);
+		let _nomUs = x.idprint_server_estructura === '3' ? '' : _detalle_json.Array_enca.nom_us === undefined ? _detalle_json.Array_enca[0].nom_us : _detalle_json.Array_enca.nom_us; // -> 
+		_nomUs = _nomUs.split(' ')[0];
+		
 		const _listSend = { data: _detalle_json, nom_documento: x.nom_documento, nomUs:_nomUs, hora: x.hora };
 		x.impreso=1;
 		x.error = 0;
@@ -218,7 +221,7 @@ function xUpdateEstructuras() {
 				data: { arrEstructura: listEstructuras, logo: logo}
 			})
 			.done((res) => {
-				// console.log(res);
+				console.log(res);
 			});	
 	
 		});
