@@ -19,7 +19,7 @@
 				$_SESSION['idsede']=$_POST['s'];
 				
 				$bdNom = 'restobar';
-				if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
+				if ($_POST['d']=='d') {$bdNom = 'restobar_demo';}
 				$_SESSION['nombd']=$bdNom;
 				$bd=new xManejoBD($_SESSION['nombd']);
 
