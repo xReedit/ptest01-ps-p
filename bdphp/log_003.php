@@ -5,7 +5,10 @@
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
-	$bd=new xManejoBD("restobar");
+
+	if (isset($_SESSION['nombd'])) {
+		$bd=new xManejoBD($_SESSION['nombd']);
+	}
 
 	date_default_timezone_set('America/Lima');
 
@@ -13,8 +16,13 @@
     switch ($op) {
 		case '0':// prepar variables					
 				$_SESSION['ido']=$_POST['o'];
-				$_SESSION['idsede']=$_POST['s'];		
+				$_SESSION['idsede']=$_POST['s'];
 				
+				$bdNom = 'restobar';
+				if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
+				$_SESSION['nombd']=$bdNom;
+				$bd=new xManejoBD($_SESSION['nombd']);
+
 				// ip local
 				$sql="select ip_server_local from sede where idsede=".$_SESSION['idsede'];
 				$ipLocal=$bd->xDevolverUnDato($sql);
