@@ -235,20 +235,18 @@ function xUpdateEstructuras() {
 }
 
 function xGenerarGrafico() {
-	const _ListEstadisticaView = groupBy(ListEstadistica, 'nom_documento');
-	let _chart = []
-	Object.keys(_ListEstadisticaView).map(k => {
-		_chart=[k, _ListEstadisticaView[k].length];
+	const _ListEstadisticaView = groupBy(ListEstadistica, 'descripcion_doc');
+	let _chart = [];
+	Object.keys(_ListEstadisticaView).map((k, index) => {
+		_chart.push([k, _ListEstadisticaView[k].length]);
 	});
 
-	console.log(_chart);
+	// console.log(_chart);
 
 	var chart = c3.generate({
 		bindto: '#xchart',
-		data: {
-			columns: [
-				_chart,				
-			],
+		data: {			
+			columns: _chart,
 			type: 'bar', labels: true
 		},
 		bar: {
