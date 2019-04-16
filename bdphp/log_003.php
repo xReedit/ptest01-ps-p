@@ -9,7 +9,6 @@
 	if (isset($_SESSION['nombd'])) {
 		$bd=new xManejoBD($_SESSION['nombd']);
 	}
-	//$bd=new xManejoBD('restobar');
 
 	date_default_timezone_set('America/Lima');
 
@@ -20,9 +19,10 @@
 				$_SESSION['idsede']=$_POST['s'];
 				
 				$bdNom = 'restobar';
-				if ($_POST['d']=='d') {$bdNom = 'restobar_demo';}
+				if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
 				$_SESSION['nombd']=$bdNom;
 				$bd=new xManejoBD($_SESSION['nombd']);
+
 				// ip local
 				$sql="select ip_server_local from sede where idsede=".$_SESSION['idsede'];
 				$ipLocal=$bd->xDevolverUnDato($sql);
@@ -73,6 +73,10 @@
 			break;
 		case '301': //eliminar todos los pedidos con error
 			$sql="update print_server_detalle set estado=1 where idprint_server_detalle in (".$_POST['id'].")";
+			$bd->xConsulta_NoReturn($sql);
+			break;
+		case '302': //guardar impreso=1
+			$sql="update print_server_detalle set error=1 where idprint_server_detalle=".$_POST['id'];
 			$bd->xConsulta_NoReturn($sql);
 			break;
 		case '4': // list estructuras

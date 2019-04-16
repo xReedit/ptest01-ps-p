@@ -84,19 +84,27 @@ function xInitPrintServer() {
 
 function xSendPrint() {
 	// const _listSend = ListDocs.map((x)=> {
-	ListDocs.map((x)=> {
+	ListDocs.filter(x => !x.xPausaError).map((x)=> {
 	// for (let index = 0; index < ListDocs.length; index++) {
 		// let x = ListDocs[index];	
 
 		if (x.impreso===1) return;
-		if ( xPausaError ) return;
+		// if ( xPausaError ) return;
+		if (x.error === 1) return;
 
 		const _id = x.idprint_server_detalle;
 		let _detalle_json;
 		try {
 			_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
 		} catch (error) {
-			_detalle_json = JSON.parse(x.detalle_json);
+			try {				
+				_detalle_json = JSON.parse(x.detalle_json);
+			} catch (error) {
+				x.error = 1;
+				xUpdateEstadoError(_id);
+				xErrorPrint(_id);
+				return;
+			}
 		}
 		
 		let _nomUs = x.idprint_server_estructura === '3' ? '' : _detalle_json.Array_enca.nom_us === undefined ? _detalle_json.Array_enca[0].nom_us : _detalle_json.Array_enca.nom_us; // -> 
@@ -121,6 +129,7 @@ function xSendPrint() {
 		.fail(function (e) {
 			xPausaError = true;
 			x.error = 1;
+			xUpdateEstadoError(_id);
 			xErrorPrint(_id);
 		});
 		
@@ -182,6 +191,17 @@ function xUpdateEstado(_id) {
 		if (IntervalClearCola===null) {
 			IntervalClearCola = setInterval(xClearCola, 7000);
 		}
+	});
+}
+
+function xUpdateEstadoError(_id) {
+	// const _id = ListDocs[_index].idprint_server_detalle;	
+	$.ajax({
+		url: './bdphp/log_003.php?op=302',
+		type: 'POST',
+		data: { id: _id}
+	}).done((x)=> {
+		// console.log(x);
 	});
 }
 
