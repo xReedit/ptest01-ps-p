@@ -54,26 +54,38 @@ function xInitPrintServer() {
 
 		/// agregar a la lista
 		let row = ListDocs.length;
+		let cadena_tr = '';
 
-		_ListDocumentos.map((x)=>{
+		_ListDocumentos.map((x, index)=>{
 			ListDocs.push(x);		
 			ListEstadistica.push(x);
-		});
 
-		xGenerarGrafico();
-
-
-		let cadena_tr = '';				
-		_ListDocumentos.map((x, index) => {			
 			const id = x.idprint_server_detalle;			
+			const _detalle_json = JSON.parse(x.detalle_json);
 			row++;
 			cadena_tr += '<tr id="tr' + id +'">'+
 				'<td>'+ row +'</td>'+
 				'<td>' + x.hora + '</td>' +
 				'<td>' + x.descripcion_doc + '</td>' +
+				'<td>' + _detalle_json.Array_print[0].ip_print + '</td>' +
 				'<td id="td_estado' + id +'">Pendiente</td>' +
 			'</tr>';
 		});
+
+		xGenerarGrafico();
+
+
+		// let cadena_tr = '';				
+		// _ListDocumentos.map((x, index) => {			
+		// 	const id = x.idprint_server_detalle;			
+		// 	row++;
+		// 	cadena_tr += '<tr id="tr' + id +'">'+
+		// 		'<td>'+ row +'</td>'+
+		// 		'<td>' + x.hora + '</td>' +
+		// 		'<td>' + x.descripcion_doc + '</td>' +
+		// 		'<td id="td_estado' + id +'">Pendiente</td>' +
+		// 	'</tr>';
+		// });
 
 		$("#listDoc").append(cadena_tr).trigger('create');
 
@@ -82,15 +94,15 @@ function xInitPrintServer() {
 	});	  
 }
 
-function xSendPrint() {
+async function xSendPrint() {
 	// const _listSend = ListDocs.map((x)=> {
-	ListDocs.filter(x => !x.xPausaError).map((x)=> {
-	// for (let index = 0; index < ListDocs.length; index++) {
-		// let x = ListDocs[index];	
+	// ListDocs.filter(x => !x.xPausaError).map(async (x, index) => {
+	for (let index = 0; index < ListDocs.length; index++) {
+		let x = ListDocs[index];
 
-		if (x.impreso===1) return;
+		if (x.impreso===1) continue;
 		// if ( xPausaError ) return;
-		if (x.error === 1) return;
+		if (x.error === 1) continue;
 
 		const _id = x.idprint_server_detalle;
 		let _detalle_json;
@@ -113,28 +125,95 @@ function xSendPrint() {
 		const _listSend = { data: _detalle_json, nom_documento: x.nom_documento, nomUs:_nomUs, hora: x.hora };
 		x.impreso=1;
 		x.error = 0;
+		x.quitar_lista = 0;
 		// return { data: _detalle_json, nom_documento: x.nom_documento, nomUs: _nomUs };
 
 
+		const rpt_p = await xSendPrintNow(_listSend, _id, index);
 
-		$.ajax({
+
+		// $.ajax({
+		// 	url: ipUrlLocal+'/restobar/print/client/pruebas.print_url.php',
+		// 	type: 'POST',
+		// 	data: { arrData: _listSend }
+		// })
+		// .done((res) => {
+		// 	// console.log(res);
+		// 	xUpdateEstado(_id);
+		// 	// return true;
+		// })
+		// .fail(function (e) {
+		// 	xPausaError = true;
+		// 	x.error = 1;
+		// 	xUpdateEstadoError(_id);
+		// 	xErrorPrint(_id);
+		// 	// return false;
+		// });
+
+		console.log('rpt_p', rpt_p);
+
+		
+	};
+	
+}
+
+async function xSendPrintNow(_listSend, _id, index) {
+	var rpt_now;
+	await $.ajax({
 			url: ipUrlLocal+'/restobar/print/client/pruebas.print_url.php',
 			type: 'POST',
-			data: { arrData: _listSend }
-		})
-		.done((res) => {
-			console.log(res);
-			xUpdateEstado(_id);
-		})
-		.fail(function (e) {
-			xPausaError = true;
-			x.error = 1;
-			xUpdateEstadoError(_id);
-			xErrorPrint(_id);
+			// timeout: 5000,
+			data: { arrData: _listSend },
+			success: (res) => {
+				if(res.indexOf('Error, Verifique') > -1) {
+					xPausaError = true;
+					ListDocs[index].error = 1;
+					xUpdateEstadoError(_id);
+					xErrorPrint(_id);
+					rpt_now = false;				
+				} else {					
+					xUpdateEstado(_id);
+					ListDocs[index].quitar_lista = 1;
+					rpt_now = true;		
+				}
+			},
+			error: (e, textStatus, msj) => {				
+				xPausaError = true;
+				ListDocs[index].error = 1;				
+				xUpdateEstadoError(_id);
+				xErrorPrint(_id);
+				rpt_now = false;
+				// e.abort();
+			}
 		});
-		
-	});
-	
+		// .done((res) => {
+		// 	// console.log(res);
+		// 	if(res.indexOf('Error, Verifique') > -1) {
+		// 		xPausaError = true;
+		// 		ListDocs[index].error = 1;
+		// 		xUpdateEstadoError(_id);
+		// 		xErrorPrint(_id);
+		// 		rpt_now = false;				
+		// 	} else {
+		// 		xUpdateEstado(_id);
+		// 		rpt_now = true;
+		// 	}
+
+		// })
+		// .fail((e, textStatus, msj) => {
+		// 	console.log(textStatus);
+		// 	xPausaError = true;
+		// 	ListDocs[index].error = 1;
+		// 	xUpdateEstadoError(_id);
+		// 	xErrorPrint(_id);
+		// 	rpt_now = false;			
+		// }).always((e, textStatus, msj) => {
+		//     rpt_now = false;		    
+		// });
+		// timeout(5000);
+
+		return rpt_now;
+		console.log('rpt_p', rpt_p);
 }
 
 
@@ -213,6 +292,7 @@ function xClearCola() {
 	
 	let paso=false;
 	ListDocs.map((x, index) => {
+		if (x.quitar_lista === 0) return;
 		if (x.error === 1) return;
 		if (x.impreso === 1 && !paso) {
 			const nomTr = "#tr" + x.idprint_server_detalle;
