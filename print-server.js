@@ -62,14 +62,17 @@ function xInitPrintServer() {
 
 			const id = x.idprint_server_detalle;			
 			let _detalle_json;
+			let _ip_print;
 			try {
 				_detalle_json = JSON.parse(x.detalle_json);
+				_ip_print = _detalle_json.Array_print[0].ip_print
 				
 			} catch (error) {
 				try {
 					_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
+					_ip_print = _detalle_json.Array_print[0].ip_print
 				}	
-				catch (error) {  _detalle_json = null; }
+				catch (error) {  _detalle_json = null; _ip_print = 'error' }
 			}
 
 			row++;
