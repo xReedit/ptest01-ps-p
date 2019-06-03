@@ -72,7 +72,11 @@ function xInitPrintServer() {
 					_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
 					_ip_print = _detalle_json.Array_print[0].ip_print
 				}	
-				catch (error) {  _detalle_json = null; _ip_print = 'error' }
+				catch (error) {  
+					_detalle_json = null; 
+					_ip_print = 'error' 
+					console.log('log ', x.detalle_json);
+				}
 			}
 
 			row++;
