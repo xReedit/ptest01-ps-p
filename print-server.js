@@ -80,7 +80,7 @@ function xInitPrintServer() {
 				'<td>'+ row +'</td>'+
 				'<td>' + x.hora + '</td>' +
 				'<td>' + x.descripcion_doc + '</td>' +
-				'<td>' + _detalle_json.Array_print[0].ip_print || 'error' + '</td>' +
+				'<td>' + _ip_print + '</td>' +
 				'<td id="td_estado' + id +'">Pendiente</td>' +
 			'</tr>';
 		});
