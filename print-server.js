@@ -61,13 +61,23 @@ function xInitPrintServer() {
 			ListEstadistica.push(x);
 
 			const id = x.idprint_server_detalle;			
-			const _detalle_json = JSON.parse(x.detalle_json);
+			let _detalle_json;
+			try {
+				_detalle_json = JSON.parse(x.detalle_json);
+				
+			} catch (error) {
+				try {
+					_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
+				}	
+				catch (error) {  _detalle_json = null; }
+			}
+
 			row++;
 			cadena_tr += '<tr id="tr' + id +'">'+
 				'<td>'+ row +'</td>'+
 				'<td>' + x.hora + '</td>' +
 				'<td>' + x.descripcion_doc + '</td>' +
-				'<td>' + _detalle_json.Array_print[0].ip_print + '</td>' +
+				'<td>' + _detalle_json.Array_print[0].ip_print || 'error' + '</td>' +
 				'<td id="td_estado' + id +'">Pendiente</td>' +
 			'</tr>';
 		});
