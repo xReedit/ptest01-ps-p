@@ -1,7 +1,8 @@
-let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false;
+let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {};
 
 $(document).ready(function() {
 	ultimoId=0;
+	getDataO();
 	xUpdateEstructuras();
 	setTimeout(() => {
 		$("body").addClass("loaded");
@@ -11,13 +12,16 @@ $(document).ready(function() {
 	xPrepararData();
 });
 
-function xPrepararData() {
-	const _data_o = getUrlParameter('o', '?');
-	console.log(_data_o);
+function getDataO() {
+	_data_o = getUrlParameter('o', '?');
+	_data_o = JSON.parse(atob(_data_o));
+}
+
+function xPrepararData() {	
 	$.ajax({
 		url: './bdphp/log_003.php?op=0',
 		type: 'POST',
-		data: JSON.parse(atob(_data_o))
+		data: _data_o
 	})
 	.done((res) => {
 		ipUrlLocal = res;
@@ -26,8 +30,10 @@ function xPrepararData() {
 }
 
 function xVerificarColaImpresion(){
+	console.log(JSON.stringify(_data_o));
+	const _urlEvent = './bdphp/log_003.php?op=201&u=' + ultimoId + '&data=' + JSON.stringify(_data_o);
 	if(typeof(EventSource) !== "undefined") {
-		xsourceEventCola = new EventSource('./bdphp/log_003.php?op=201&u=' + ultimoId);
+		xsourceEventCola = new EventSource(_urlEvent);
 		xsourceEventCola.onmessage = function(event) {
 			valRows = event.data === "" ? valRows : event.data;
 			if (parseInt(valRows) > parseInt(ultimoId)) {
@@ -43,10 +49,12 @@ function xVerificarColaImpresion(){
 
 function xInitPrintServer() {
 	// const _ultimoId = ListDocs.length === 0 ? '' : ultimoId;
+	var dataSend = _data_o;
+	dataSend.ultimoId = ultimoId;
 	$.ajax({
 		url: './bdphp/log_003.php?op=2',
 		type: 'POST',	
-		data: { ultimoId: ultimoId }
+		data: dataSend
 	})
 	.done((res) => {
 		const _res = $.parseJSON(res);
@@ -327,12 +335,13 @@ function xUpdateEstructuras() {
 	$.ajax({
 		url: './bdphp/log_003.php?op=5',
 		type: 'POST',
+		data : _data_o
 	})
 	.done((res) => {
 		const logo = res;
 		$.ajax({
 			url: './bdphp/log_003.php?op=4',
-			type: 'POST',		
+			type: 'POST'
 		})
 		.done((res) => {
 			const _res = $.parseJSON(res);		

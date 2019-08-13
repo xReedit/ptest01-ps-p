@@ -13,18 +13,26 @@
 	date_default_timezone_set('America/Lima');
 
 	$op = $_GET['op'];	
+	$ido =$_POST['o'];
+	$idsede = $_POST['s'];
+
+	// $bdNom = 'restobar';
+	// if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
+	// $bd=new xManejoBD($bdNom);
+	// $_SESSION['nombd']=$bdNom;
+
     switch ($op) {
 		case '0':// prepar variables					
-				$_SESSION['ido']=$_POST['o'];
-				$_SESSION['idsede']=$_POST['s'];
-				
+				// $_SESSION['ido']=$_POST['o'];
+				// $_SESSION['idsede']=$_POST['s'];
+
 				$bdNom = 'restobar';
 				if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
 				$_SESSION['nombd']=$bdNom;
 				$bd=new xManejoBD($_SESSION['nombd']);
 
 				// ip local
-				$sql="select ip_server_local from sede where idsede=".$_SESSION['idsede'];
+				$sql="select ip_server_local from sede where idsede=$idsede";
 				$ipLocal=$bd->xDevolverUnDato($sql);
 				print "http://".$ipLocal;
 				return;
@@ -51,18 +59,21 @@
 			$sql="SELECT psd.*, pse.estructura_json, pse.nom_documento
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
-					WHERE (psd.idorg=".$_SESSION['ido']." and psd.idsede=".$_SESSION['idsede']." and psd.impreso=0) and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
+					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
 			
 			$bd->xConsulta($sql);
 			break;
 		case '201': //verificar si hay nuevos registros
 			$UltimoId=$_GET['u'];
-			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle>'.$UltimoId.' '; }
+			$data=json_decode($_GET['data'], true);
+			$idorg = $data['o'];
+			$idsede = $data['s'];
+			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
 
-			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle
-						where (idorg=".$_SESSION['ido']." and idsede=".$_SESSION['idsede']." and impreso=0)".$UltimoId;
+			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idorg=$idorg and idsede=$idsede and impreso=0)".$UltimoId;
 						
 			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
+			// echo $sql;
 			echo "retry: 2000\n"."data:".$numero_pedidos_actual."\n\n";
 			ob_flush();
 			flush();
@@ -84,7 +95,7 @@
 			$bd->xConsulta($sql);			
 			break;
 		case '5':// logo bits
-			$sql = "SELECT logo64 FROM sede where idsede=".$_SESSION['idsede'];
+			$sql = "SELECT logo64 FROM sede where idsede=$idsede";
 			$logo = $bd->xDevolverUnDato($sql);	
 			echo $logo;
 			break;
