@@ -3,7 +3,7 @@ let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null
 $(document).ready(function() {
 	ultimoId=0;
 	getDataO();
-	xUpdateEstructuras();
+	// 
 	setTimeout(() => {
 		$("body").addClass("loaded");
 		// xInitPrintServer();
@@ -25,6 +25,7 @@ function xPrepararData() {
 	})
 	.done((res) => {
 		ipUrlLocal = res;
+		xUpdateEstructuras();
 		xVerificarColaImpresion();
 	})
 }
@@ -124,13 +125,14 @@ async function xSendPrint() {
 	// ListDocs.filter(x => !x.xPausaError).map(async (x, index) => {
 	for (let index = 0; index < ListDocs.length; index++) {
 		let x = ListDocs[index];
-
+		let _detalle_json;
+		let rpt_p = '';
+		
+		const _id = x.idprint_server_detalle;
 		if (x.impreso===1) continue;
 		// if ( xPausaError ) return;
 		if (x.error === 1) continue;
 
-		const _id = x.idprint_server_detalle;
-		let _detalle_json;
 		try {
 			_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
 		} catch (error) {
@@ -152,9 +154,12 @@ async function xSendPrint() {
 		x.error = 0;
 		x.quitar_lista = 0;
 		// return { data: _detalle_json, nom_documento: x.nom_documento, nomUs: _nomUs };
-
-
-		const rpt_p = await xSendPrintNow(_listSend, _id, index);
+		
+		try {			
+			rpt_p = await xSendPrintNow(_listSend, _id, index);
+		} catch (err) {
+			console.log(err.statusText);
+		}
 
 
 		// $.ajax({
@@ -184,10 +189,11 @@ async function xSendPrint() {
 
 async function xSendPrintNow(_listSend, _id, index) {
 	var rpt_now;
+	const nomFile = _listSend.nom_documento+ '.php';
 	await $.ajax({
-			url: ipUrlLocal+'/restobar/print/client/pruebas.print_url.php',
+			url: ipUrlLocal + '/restobar/print/client/' + nomFile,
 			type: 'POST',
-			// timeout: 5000,
+			timeout: 9000,
 			data: { arrData: _listSend },
 			success: (res) => {
 				if(res.indexOf('Error, Verifique') > -1) {
@@ -208,6 +214,7 @@ async function xSendPrintNow(_listSend, _id, index) {
 				xUpdateEstadoError(_id);
 				xErrorPrint(_id);
 				rpt_now = false;
+				// return rpt_now;
 				// e.abort();
 			}
 		});
@@ -237,6 +244,17 @@ async function xSendPrintNow(_listSend, _id, index) {
 		// });
 		// timeout(5000);
 
+		// console.log(_promise);
+		// _promise.then(
+		// 	(res) => {
+		// 		clearTimeout(timeoutId);
+		// 		resolve(res);
+		// 	},
+		// 	(err) => {
+		// 		rpt_now = false;
+		// 	}
+		// );
+
 		return rpt_now;
 		console.log('rpt_p', rpt_p);
 }
@@ -260,6 +278,8 @@ function xEliminarPedidosError() {
 
 		const _id = x.idprint_server_detalle;
 		x.error = 0;
+		x.quitar_lista = 1;
+		x.eliminado = true;	
 		arrListBorrar += _id+',';
 					
 		const nomTd = "#td_estado" + _id;
@@ -319,7 +339,7 @@ function xClearCola() {
 	ListDocs.map((x, index) => {
 		if (x.quitar_lista === 0) return;
 		if (x.error === 1) return;
-		if (x.impreso === 1 && !paso) {
+		if ((x.impreso === 1 || x.eliminado ) && !paso) {
 			const nomTr = "#tr" + x.idprint_server_detalle;
 			$(nomTr).fadeOut("slow", ()=>{
 				$(this).remove();
