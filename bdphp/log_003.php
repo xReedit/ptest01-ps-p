@@ -5,7 +5,7 @@
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
 	include "ManejoBD.php";
-
+	
 	if (isset($_SESSION['nombd'])) {
 		$bd=new xManejoBD($_SESSION['nombd']);
 	}

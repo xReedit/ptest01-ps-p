@@ -188,20 +188,21 @@ async function xSendPrint() {
 }
 
 async function xSendPrintNow(_listSend, _id, index) {
-	var rpt_now;
+	var rpt_now;	
 	const nomFile = _listSend.nom_documento+ '.php';
 	await $.ajax({
 			url: ipUrlLocal + '/restobar/print/client/' + nomFile,
 			type: 'POST',
 			timeout: 9000,
-			data: { arrData: _listSend },
+			data: { arrData: JSON.stringify(_listSend) },
 			success: (res) => {
 				if(res.indexOf('Error, Verifique') > -1) {
 					xPausaError = true;
 					ListDocs[index].error = 1;
 					xUpdateEstadoError(_id);
 					xErrorPrint(_id);
-					rpt_now = false;				
+					rpt_now = false;	
+					console.log('error ', res);			
 				} else {					
 					xUpdateEstado(_id);
 					ListDocs[index].quitar_lista = 1;
