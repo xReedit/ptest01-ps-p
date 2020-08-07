@@ -358,6 +358,11 @@ function xUpdateEstructuras() {
 	$.ajax({
 		url: './bdphp/log_003.php?op=5',
 		type: 'POST',
+		"crossDomain": true,
+		"headers": {
+              "accept": "application/json",
+              "Access-Control-Allow-Origin":"*"
+          },
 		data : _data_o
 	})
 	.done((res) => {
