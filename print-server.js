@@ -52,7 +52,6 @@ function xInitPrintServer() {
 	// const _ultimoId = ListDocs.length === 0 ? '' : ultimoId;
 	var dataSend = _data_o;
 	dataSend.ultimoId = ultimoId;
-	ultimoId = ultimoIdData;
 	$.ajax({
 		url: './bdphp/log_003.php?op=2',
 		type: 'POST',	
@@ -206,7 +205,9 @@ async function xSendPrintNow(_listSend, _id, index) {
 					console.log('error ', res);			
 				} else {					
 					xUpdateEstado(_id);
-					ListDocs[index].quitar_lista = 1;
+					try {
+						ListDocs[index].quitar_lista = 1;
+					} catch(err){console.log('isnul quitar_lista', ListDocs[index])};
 					rpt_now = true;		
 				}
 			},
