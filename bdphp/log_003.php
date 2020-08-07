@@ -1,6 +1,7 @@
 <?php
 	//log registrar el print server
 	session_start();	
+	header('Access-Control-Allow-Origin: *'); 
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
@@ -15,6 +16,7 @@
 	$op = $_GET['op'];	
 	$ido =$_POST['o'];
 	$idsede = $_POST['s'];
+
 
 	// $bdNom = 'restobar';
 	// if ($_POST['d']==='d') {$bdNom = 'restobar_demo';}
@@ -70,7 +72,7 @@
 			$idsede = $data['s'];
 			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
 
-			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idorg=$idorg and idsede=$idsede and impreso=0)".$UltimoId;
+			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId;
 						
 			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
 			// echo $sql;

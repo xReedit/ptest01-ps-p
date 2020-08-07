@@ -52,6 +52,7 @@ function xInitPrintServer() {
 	// const _ultimoId = ListDocs.length === 0 ? '' : ultimoId;
 	var dataSend = _data_o;
 	dataSend.ultimoId = ultimoId;
+	ultimoId = ultimoIdData;
 	$.ajax({
 		url: './bdphp/log_003.php?op=2',
 		type: 'POST',	
