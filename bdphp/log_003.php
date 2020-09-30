@@ -34,9 +34,20 @@
 				$bd=new xManejoBD($_SESSION['nombd']);
 
 				// ip local
-				$sql="select ip_server_local from sede where idsede=$idsede";
+				$sql="select ip_server_local, isprinter_socket from sede where idsede=$idsede";
 				$ipLocal=$bd->xDevolverUnDato($sql);
 				print "http://".$ipLocal;
+				return;
+			break;
+		case '101':// prepar variables					
+				// $_SESSION['ido']=$_POST['o'];
+				// $_SESSION['idsede']=$_POST['s'];
+
+				
+				$sql="select isprinter_socket from sede where idsede=$idsede";
+				$isPrinterSocket=$bd->xDevolverUnDato($sql);
+				print $isPrinterSocket;
+				// echo $sql;
 				return;
 			break;
 		case '1': //registrar impresion

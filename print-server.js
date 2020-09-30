@@ -1,4 +1,4 @@
-let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {};
+let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {}, isServerPrintSocket=0;
 
 $(document).ready(function() {
 	ultimoId=0;
@@ -15,9 +15,14 @@ $(document).ready(function() {
 function getDataO() {
 	_data_o = getUrlParameter('o', '?');
 	_data_o = JSON.parse(atob(_data_o));
+
+	_data_o.isFromApp = 0;
+	_data_o.isServerPrint=1;
+	openSocket(_data_o);
 }
 
-function xPrepararData() {	
+
+function xPrepararData() {
 	$.ajax({
 		url: './bdphp/log_003.php?op=0',
 		type: 'POST',
@@ -26,18 +31,95 @@ function xPrepararData() {
 	.done((res) => {
 		ipUrlLocal = res;
 		xUpdateEstructuras();
-		xVerificarColaImpresion();
-	})
+		xIsPrinterSocket();
+		/*xVerificarColaImpresion();*/
+	});
 }
 
-function xVerificarColaImpresion(){
-	console.log(JSON.stringify(_data_o));
+// sockets 240920
+
+//varifica si el server print recibe socket
+function xIsPrinterSocket() {
+	$.ajax({
+		url: './bdphp/log_003.php?op=101',
+		type: 'POST',
+		data: _data_o
+	})
+	.done((res) => {
+		isServerPrintSocket = res;		
+		if ( isServerPrintSocket !== 0 ) { 
+			// verifica si hay impresiones pendientes
+			console.log('ws', JSON.stringify(_data_o));
+			xInitPrintServer();
+			return;
+		}
+		xVerificarColaImpresion();
+	});	
+}
+
+
+function _printerComanda(data) {
+	console.log('from socket');
+	tdRowsPrint(data);
+}
+
+function tdRowsPrint(_ListDocumentos) {
+	let row = ListDocs.length;
+		let cadena_tr = '';
+
+		_ListDocumentos.map((x, index)=>{
+			ListDocs.push(x);		
+			ListEstadistica.push(x);
+
+			const id = x.idprint_server_detalle;
+			let _detalle_json;
+			let _ip_print;
+			try {
+				_detalle_json = typeof x.detalle_json === 'object' ? x.detalle_json : JSON.parse(x.detalle_json);
+				_ip_print = _detalle_json.Array_print[0].ip_print
+				
+			} catch (error) {
+				try {
+					_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
+					_ip_print = _detalle_json.Array_print[0].ip_print
+				}	
+				catch (error) {  
+					_detalle_json = null; 
+					_ip_print = 'error' 
+					console.log('log error', x.detalle_json);
+				}
+			}
+
+			row++;
+			cadena_tr += '<tr id="tr' + id +'">'+
+				'<td>'+ row +'</td>'+
+				'<td>' + x.hora + '</td>' +
+				'<td>' + x.descripcion_doc + '</td>' +
+				'<td>' + _ip_print + '</td>' +
+				'<td id="td_estado' + id +'">Pendiente</td>' +
+			'</tr>';
+		});
+
+
+		$("#listDoc").append(cadena_tr).trigger('create');
+
+		ultimoId = ultimoIdData;
+		xSendPrint();
+}
+// sockets 240920
+
+
+
+function xVerificarColaImpresion(){	
+	// console.log(JSON.stringify(_data_o));
+	if ( isServerPrintSocket !== 0 ) { return;}
 	const _urlEvent = './bdphp/log_003.php?op=201&u=' + ultimoId + '&data=' + JSON.stringify(_data_o);
 	if(typeof(EventSource) !== "undefined") {
 		xsourceEventCola = new EventSource(_urlEvent);
 		xsourceEventCola.onmessage = function(event) {
 			valRows = event.data === "" ? valRows : event.data;
 			if (parseInt(valRows) > parseInt(ultimoId)) {
+				console.log('not socket');
 				ultimoIdData = event.data;
 				xInitPrintServer();
 			}
@@ -47,8 +129,8 @@ function xVerificarColaImpresion(){
 }
 
 
-
 function xInitPrintServer() {
+	// console.log('not socket');
 	// const _ultimoId = ListDocs.length === 0 ? '' : ultimoId;
 	var dataSend = _data_o;
 	dataSend.ultimoId = ultimoId;
