@@ -2,7 +2,7 @@
 var socketPrint, verificandoConexion=true;
 function openSocket(data) {
 	// socketPrint = io.connect('http://localhost:5819', {
-	socketPrint = io.connect('https://app.restobar.papaya.com.pe', {
+	socketPrint = io.connect('https://app.restobar.papaya.com.pe', { 
     	query: {
     		idorg: _data_o.o,
     		idsede: _data_o.s,
