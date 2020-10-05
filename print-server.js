@@ -46,7 +46,7 @@ function xIsPrinterSocket() {
 		data: _data_o
 	})
 	.done((res) => {
-		isServerPrintSocket = res;		
+		isServerPrintSocket = parseInt(res);		
 		if ( isServerPrintSocket !== 0 ) { 
 			// verifica si hay impresiones pendientes
 			console.log('ws', JSON.stringify(_data_o));
