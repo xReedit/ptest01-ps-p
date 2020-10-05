@@ -2,7 +2,7 @@ let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null
 
 $(document).ready(function() {
 	ultimoId=0;
-	// getDataO();
+	getDataO();
 	// 
 	setTimeout(() => {
 		$("body").addClass("loaded");
