@@ -2,7 +2,7 @@ let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null
 
 $(document).ready(function() {
 	ultimoId=0;
-	getDataO();
+	// getDataO();
 	// 
 	setTimeout(() => {
 		$("body").addClass("loaded");
@@ -47,12 +47,15 @@ function xIsPrinterSocket() {
 	})
 	.done((res) => {
 		isServerPrintSocket = parseInt(res);		
-		if ( isServerPrintSocket !== 0 ) { 
+		if ( isServerPrintSocket !== 0 ) { // so trabaja con sockets 
 			// verifica si hay impresiones pendientes
+			getDataO();
 			console.log('ws', JSON.stringify(_data_o));
 			xInitPrintServer();
 			return;
 		}
+
+		// sino trabaja con sockets
 		xVerificarColaImpresion();
 	});	
 }
