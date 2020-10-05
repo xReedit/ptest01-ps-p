@@ -18,7 +18,7 @@ function getDataO() {
 
 	_data_o.isFromApp = 0;
 	_data_o.isServerPrint=1;
-	openSocket(_data_o);
+	// openSocket(_data_o);
 }
 
 
@@ -49,7 +49,7 @@ function xIsPrinterSocket() {
 		isServerPrintSocket = parseInt(res);		
 		if ( isServerPrintSocket !== 0 ) { // so trabaja con sockets 
 			// verifica si hay impresiones pendientes
-			getDataO();
+			openSocket();
 			console.log('ws', JSON.stringify(_data_o));
 			xInitPrintServer();
 			return;
