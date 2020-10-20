@@ -13,9 +13,9 @@
 
 	date_default_timezone_set('America/Lima');
 
-	$op = $_GET['op'];	
-	$ido =$_POST['o'];
-	$idsede = $_POST['s'];
+	$op = isset($_GET['op']) ? $_GET['op'] : 0;	
+	$ido = isset($_POST['o']) ? $_POST['o'] : 0;	
+	$idsede = isset($_POST['s']) ? $_POST['s'] : 0;	
 
 
 	// $bdNom = 'restobar';

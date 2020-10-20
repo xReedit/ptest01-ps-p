@@ -15,7 +15,7 @@ function openSocket(data) {
 
 	socketPrint.on('printerComanda', (data) => {   
 		// const _dataCocinada = data[0].data ? data[0].data.filter(x => x.print).map(x => x.print) : data[1].print;
-		console.log('printerComanda data', data);
+		// console.log('printerComanda data', data);
 		var _dataCocinada = [] ;
 		_dataCocinada.push(data);
 	    _printerComanda(_dataCocinada);	    
@@ -23,7 +23,7 @@ function openSocket(data) {
 	});
 
 	socketPrint.on('printerOnly', (data) => {   
-		console.log('printerOnly data', data);
+		// console.log('printerOnly data', data);
 		var _dataCocinada = [] ;
 		_dataCocinada.push(data);
 	    _printerComanda(_dataCocinada);	    
@@ -86,6 +86,10 @@ function statusConexSocket(isConncet, evento) {
         break;
     }    
 }
+
+function emitPrinterFlag(id) {    
+    socketPrint.emit('printer-flag-impreso', id);
+  }
 
 function verifyConexionSocket() {
     // console.log('verificando...');

@@ -7,9 +7,9 @@ $(document).ready(function() {
 	setTimeout(() => {
 		$("body").addClass("loaded");
 		// xInitPrintServer();
-	}, 1000);	
-	
-	xPrepararData();
+		xPrepararData();
+	}, 2000);	
+		
 });
 
 function getDataO() {
@@ -18,15 +18,19 @@ function getDataO() {
 
 	_data_o.isFromApp = 0;
 	_data_o.isServerPrint=1;
+
+	// console.log('_data_o', _data_o);
+	return _data_o;
 	// openSocket(_data_o);
 }
 
 
 function xPrepararData() {
+	const _dataSendO = getDataO();
 	$.ajax({
 		url: './bdphp/log_003.php?op=0',
 		type: 'POST',
-		data: _data_o
+		data: _dataSendO
 	})
 	.done((res) => {
 		ipUrlLocal = res;
@@ -40,10 +44,11 @@ function xPrepararData() {
 
 //varifica si el server print recibe socket
 function xIsPrinterSocket() {
+	const _dataSendO = getDataO();
 	$.ajax({
 		url: './bdphp/log_003.php?op=101',
 		type: 'POST',
-		data: _data_o
+		data: _dataSendO
 	})
 	.done((res) => {
 		isServerPrintSocket = parseInt(res);		
@@ -94,6 +99,9 @@ function tdRowsPrint(_ListDocumentos) {
 			}
 
 			row++;
+
+			x.hora = x.hora ? x.hora : new Date().toLocaleTimeString();
+
 			cadena_tr += '<tr id="tr' + id +'">'+
 				'<td>'+ row +'</td>'+
 				'<td>' + x.hora + '</td>' +
@@ -105,6 +113,8 @@ function tdRowsPrint(_ListDocumentos) {
 
 
 		$("#listDoc").append(cadena_tr).trigger('create');
+
+		xGenerarGrafico();
 
 		ultimoId = ultimoIdData;
 		xSendPrint();
@@ -135,7 +145,7 @@ function xVerificarColaImpresion(){
 function xInitPrintServer() {
 	// console.log('not socket');
 	// const _ultimoId = ListDocs.length === 0 ? '' : ultimoId;
-	var dataSend = _data_o;
+	var dataSend = getDataO();
 	dataSend.ultimoId = ultimoId;
 	$.ajax({
 		url: './bdphp/log_003.php?op=2',
@@ -344,7 +354,7 @@ async function xSendPrintNow(_listSend, _id, index) {
 		// );
 
 		return rpt_now;
-		console.log('rpt_p', rpt_p);
+		// console.log('rpt_p', rpt_p);
 }
 
 
@@ -388,7 +398,15 @@ function xEliminarPedidosError() {
 	$("#div_error").addClass('xInvisible');
 }
 
-function xUpdateEstado(_id) {
+function xUpdateEstado(_id) {	
+
+	if ( isServerPrintSocket == 1 ) { 
+		emitPrinterFlag(_id);
+		xMarcarOkPedido(_id);
+		return;
+	}
+
+
 	// const _id = ListDocs[_index].idprint_server_detalle;	
 	$.ajax({
 		url: './bdphp/log_003.php?op=3',
@@ -396,14 +414,18 @@ function xUpdateEstado(_id) {
 		data: { id: _id}
 	})
 	.done( ()=> {
-		const nomTd = "#td_estado" + _id;
-		$(nomTd).text('Impreso');
-		$(nomTd).addClass('xVerde');
-
-		if (IntervalClearCola===null) {
-			IntervalClearCola = setInterval(xClearCola, 7000);
-		}
+		xMarcarOkPedido(_id);
 	});
+}
+
+function xMarcarOkPedido(_id){
+	const nomTd = "#td_estado" + _id;
+	$(nomTd).text('Impreso');
+	$(nomTd).addClass('xVerde');
+
+	if (IntervalClearCola===null) {
+		IntervalClearCola = setInterval(xClearCola, 7000);
+	}
 }
 
 function xUpdateEstadoError(_id) {
@@ -440,6 +462,7 @@ function xClearCola() {
 
 
 function xUpdateEstructuras() {
+	const _dataSendO = getDataO();
 	$.ajax({
 		url: './bdphp/log_003.php?op=5',
 		type: 'POST',
@@ -448,7 +471,7 @@ function xUpdateEstructuras() {
               "accept": "application/json",
               "Access-Control-Allow-Origin":"*"
           },
-		data : _data_o
+		data : _dataSendO
 	})
 	.done((res) => {
 		const logo = res;
