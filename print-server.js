@@ -299,7 +299,7 @@ async function xSendPrintNow(_listSend, _id, index) {
 					rpt_now = false;	
 					console.log('error ', res);			
 				} else {					
-					xUpdateEstado(_id);
+					xUpdateEstado(_id, _listSend.data.Array_enca.idpedido);
 					try {
 						ListDocs[index].quitar_lista = 1;
 					} catch(err){console.log('isnul quitar_lista', ListDocs[index])};
@@ -398,20 +398,20 @@ function xEliminarPedidosError() {
 	$("#div_error").addClass('xInvisible');
 }
 
-function xUpdateEstado(_id) {	
+function xUpdateEstado(_id, _idpedido = 0) {	
 
-	if ( isServerPrintSocket == 1 ) { 
-		emitPrinterFlag(_id);
-		xMarcarOkPedido(_id);
-		return;
-	}
+	// if ( isServerPrintSocket == 1 ) { 
+	// 	emitPrinterFlag(_id);
+	// 	xMarcarOkPedido(_id);
+	// 	return;
+	// }
 
 
 	// const _id = ListDocs[_index].idprint_server_detalle;	
 	$.ajax({
 		url: './bdphp/log_003.php?op=3',
 		type: 'POST',
-		data: { id: _id}
+		data: { id: _id, idpedido: _idpedido}
 	})
 	.done( ()=> {
 		xMarcarOkPedido(_id);

@@ -94,6 +94,10 @@
 		case '3': //guardar impreso=1
 			$sql="update print_server_detalle set impreso=1 where idprint_server_detalle=".$_POST['id'];
 			$bd->xConsulta_NoReturn($sql);
+
+			// guardar estado pedido como visto
+			$sql="update pedido set pwa_estado='A' where idpedido=".$_POST['idpedido']." and pwa_estado='P'";
+			$bd->xConsulta_NoReturn($sql);
 			break;
 		case '301': //eliminar todos los pedidos con error
 			$sql="update print_server_detalle set estado=1 where idprint_server_detalle in (".$_POST['id'].")";
