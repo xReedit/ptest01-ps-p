@@ -68,11 +68,16 @@
 			// 				INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura
 			// 				INNER JOIN usuario as u on u.idusuario = psd.idusuario
 			// 		WHERE (psd.idorg=".$_SESSION['ido']." and psd.idsede=".$_SESSION['idsede']." and psd.impreso=0) and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
+
+			// 091220 solo los ultimos 5minutos
+			// and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 5
 			
 			$sql="SELECT psd.*, pse.estructura_json, pse.nom_documento
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
-					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
+					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) 
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 5
+						and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
 			
 			$bd->xConsulta($sql);
 			break;
@@ -92,7 +97,7 @@
 			flush();
 			break;
 		case '3': //guardar impreso=1
-			$sql="update print_server_detalle set impreso=1 where idprint_server_detalle=".$_POST['id'];
+			$sql="update print_server_detalle set impreso=1 where idprint_server_detalle=".$_POST['id']." and impreso = 0";
 			$bd->xConsulta_NoReturn($sql);
 
 			// guardar estado pedido como visto
