@@ -410,7 +410,9 @@ function xUpdateEstado(_id, _idpedido = 0, _itemPrinter = null) {
 	// 	return;
 	// }
 
-	emitPrinterFlagUpdate(_id);
+	if ( isServerPrintSocket == 1 ) { 
+		emitPrinterFlagUpdate(_id);
+	}	
 
 
 	// agregamos a la lista para actualizar su estado impreso					
