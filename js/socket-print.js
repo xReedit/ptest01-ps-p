@@ -2,7 +2,7 @@
 var socketPrint, verificandoConexion=true;
 function openSocket(data) {
 	// socketPrint = io.connect('http://localhost:5819', {
-	socketPrint = io.connect('https://app.restobar.papaya.com.pe', { 
+	socketPrint = io.connect('https://app.restobar.papaya.com.pe', {   
     	query: {
     		idorg: _data_o.o,
     		idsede: _data_o.s,
@@ -18,7 +18,9 @@ function openSocket(data) {
 		// console.log('printerComanda data', data);
 		var _dataCocinada = [] ;
 		_dataCocinada.push(data);
-	    _printerComanda(_dataCocinada);	    
+	  _printerComanda(_dataCocinada);	    
+
+
 	    
 	});
 
@@ -87,8 +89,12 @@ function statusConexSocket(isConncet, evento) {
     }    
 }
 
-function emitPrinterFlag(id) {    
-    socketPrint.emit('printer-flag-impreso', id);
+function emitPrinterFlag(dataPedido) {    
+    socketPrint.emit('printer-flag-impreso', dataPedido);
+  }
+
+function emitPrinterFlagUpdate(id) {    
+    socketPrint.emit('printer-flag-impreso-update', id);
   }
 
 function verifyConexionSocket() {

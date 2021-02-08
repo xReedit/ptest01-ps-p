@@ -76,7 +76,7 @@
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
 					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) 
-						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 15
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 60
 						and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
 			
 			$bd->xConsulta($sql);
@@ -97,12 +97,13 @@
 			flush();
 			break;
 		case '3': //guardar impreso=1
-			$sql="update print_server_detalle set impreso=1 where idprint_server_detalle=".$_POST['id']." and impreso = 0";
-			$bd->xConsulta_NoReturn($sql);
+			$sqlA="update print_server_detalle set impreso=1 where idprint_server_detalle in(".$_POST['id'].") and impreso = 0; ";
+			// $bd->xConsulta_NoReturn($sql);
 
 			// guardar estado pedido como visto
-			$sql="update pedido set pwa_estado='A' where idpedido=".$_POST['idpedido']." and pwa_estado='P'";
-			$bd->xConsulta_NoReturn($sql);
+			$sqlB="update pedido set pwa_estado='A', is_printer = 1 where idpedido in(".$_POST['idpedido'].") and pwa_estado='P'; ";
+			// $sqlB="update pedido set is_printer = 1 where idpedido in(".$_POST['idpedido'].")";
+			$bd->xMultiConsulta($sqlA.$sqlB);
 			break;
 		case '301': //eliminar todos los pedidos con error
 			$sql="update print_server_detalle set estado=1 where idprint_server_detalle in (".$_POST['id'].")";

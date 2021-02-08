@@ -1,4 +1,4 @@
-let ListDocs = [], ListEstadistica = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {}, isServerPrintSocket=0;
+let ListDocs = [], ListEstadistica = [], listOnlyPrinters = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {}, isServerPrintSocket=0;
 
 $(document).ready(function() {
 	ultimoId=0;
@@ -10,6 +10,8 @@ $(document).ready(function() {
 		xPrepararData();
 	}, 2000);	
 		
+
+	setInterval(xRunTimerUpdateEstado, 3000);
 });
 
 function getDataO() {
@@ -100,7 +102,8 @@ function tdRowsPrint(_ListDocumentos) {
 
 			row++;
 
-			x.hora = x.hora ? x.hora : new Date().toLocaleTimeString();
+			// x.hora = x.hora ? x.hora : new Date().toLocaleTimeString();
+			x.hora = new Date().toLocaleTimeString();
 
 			cadena_tr += '<tr id="tr' + id +'">'+
 				'<td>'+ row +'</td>'+
@@ -247,7 +250,7 @@ async function xSendPrint() {
 		const _listSend = { data: _detalle_json, nom_documento: x.nom_documento, nomUs:_nomUs, hora: x.hora };
 		x.impreso=1;
 		x.error = 0;
-		x.quitar_lista = 0;
+		x.quitar_lista = 0;		
 		// return { data: _detalle_json, nom_documento: x.nom_documento, nomUs: _nomUs };
 		
 		try {			
@@ -299,7 +302,8 @@ async function xSendPrintNow(_listSend, _id, index) {
 					rpt_now = false;	
 					console.log('error ', res);			
 				} else {					
-					xUpdateEstado(_id, _listSend.data.Array_enca.idpedido);
+					xUpdateEstado(_id, _listSend.data.Array_enca.idpedido, _listSend);
+
 					try {
 						ListDocs[index].quitar_lista = 1;
 					} catch(err){console.log('isnul quitar_lista', ListDocs[index])};
@@ -398,23 +402,72 @@ function xEliminarPedidosError() {
 	$("#div_error").addClass('xInvisible');
 }
 
-function xUpdateEstado(_id, _idpedido = 0) {	
+function xUpdateEstado(_id, _idpedido = 0, _itemPrinter = null) {	
 
 	// if ( isServerPrintSocket == 1 ) { 
-	// 	emitPrinterFlag(_id);
+	// emitPrinterFlag(_id);
 	// 	xMarcarOkPedido(_id);
 	// 	return;
 	// }
 
+	emitPrinterFlagUpdate(_id);
+
+
+	// agregamos a la lista para actualizar su estado impreso					
+	const _dataPush = {item: _itemPrinter, idprint_server_detalle: _id, idpedido: _idpedido}
+
+	//chequeamos si es pedido y si ya existe en la lista para no actualizar cada vez
+	// if ( _idpedido !== 0 ) {
+	// 	const isPedidoList = listOnlyPrinters.filter(x => x.idpedido == _idpedido)[0];
+	// 	if ( !isPedidoList ) {
+	// 		listOnlyPrinters.push(_dataPush);
+	// 	}
+
+	// } else {
+	// 	listOnlyPrinters.push(_dataPush);
+	// }
+
+	listOnlyPrinters.push(_dataPush);
+
+
+	xMarcarOkPedido(_id);
+
 
 	// const _id = ListDocs[_index].idprint_server_detalle;	
+	// $.ajax({
+	// 	url: './bdphp/log_003.php?op=3',
+	// 	type: 'POST',
+	// 	data: { id: _id, idpedido: _idpedido}
+	// })
+	// .done( ()=> {
+	// 	xMarcarOkPedido(_id);
+	// });
+}
+
+function xRunTimerUpdateEstado() {
+	// const _id = ListDocs[_index].idprint_server_detalle;	
+	console.log('paso a chequear',listOnlyPrinters.length);
+
+	if (listOnlyPrinters.length === 0 ) {return; }
+
+	const idsPrinterDetalle = listOnlyPrinters.map(x => x.idprint_server_detalle).join(',');
+	const idsPedidos = listOnlyPrinters.filter(x => x.idpedido !== 0).map(x => x.idpedido).join(',');
+
+	console.log('paso a guardar',listOnlyPrinters);
+	emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+
+
 	$.ajax({
 		url: './bdphp/log_003.php?op=3',
 		type: 'POST',
-		data: { id: _id, idpedido: _idpedido}
+		data: { id: idsPrinterDetalle, idpedido: idsPedidos}
 	})
-	.done( ()=> {
-		xMarcarOkPedido(_id);
+	.done( (res)=> {
+		console.log(res);
+
+		// xMarcarOkPedido(_id);
+		//  borrar lista
+		listOnlyPrinters = [];
 	});
 }
 
