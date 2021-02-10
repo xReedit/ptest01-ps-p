@@ -76,7 +76,7 @@
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
 					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) 
-						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 60
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 10
 						and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
 			
 			$bd->xConsulta($sql);

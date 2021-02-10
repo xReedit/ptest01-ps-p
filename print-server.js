@@ -9,9 +9,8 @@ $(document).ready(function() {
 		// xInitPrintServer();
 		xPrepararData();
 	}, 2000);	
-		
 
-	setInterval(xRunTimerUpdateEstado, 3000);
+		
 });
 
 function getDataO() {
@@ -64,6 +63,7 @@ function xIsPrinterSocket() {
 
 		// sino trabaja con sockets
 		xVerificarColaImpresion();
+		setInterval(xRunTimerUpdateEstado, 3000);
 	});	
 }
 
@@ -103,7 +103,8 @@ function tdRowsPrint(_ListDocumentos) {
 			row++;
 
 			// x.hora = x.hora ? x.hora : new Date().toLocaleTimeString();
-			x.hora = new Date().toLocaleTimeString();
+			// x.hora = new Date().toLocaleTimeString();
+			x.hora = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
 
 			cadena_tr += '<tr id="tr' + id +'">'+
 				'<td>'+ row +'</td>'+
@@ -254,7 +255,7 @@ async function xSendPrint() {
 		// return { data: _detalle_json, nom_documento: x.nom_documento, nomUs: _nomUs };
 		
 		try {			
-			rpt_p = await xSendPrintNow(_listSend, _id, index);
+			rpt_p = await xSendPrintNow(_listSend, _id, x);
 		} catch (err) {
 			console.log(err.statusText);
 		}
@@ -285,7 +286,7 @@ async function xSendPrint() {
 	
 }
 
-async function xSendPrintNow(_listSend, _id, index) {
+async function xSendPrintNow(_listSend, _id, item) {
 	var rpt_now;	
 	const nomFile = _listSend.nom_documento+ '.php';
 	await $.ajax({
@@ -296,7 +297,8 @@ async function xSendPrintNow(_listSend, _id, index) {
 			success: (res) => {
 				if(res.indexOf('Error, Verifique') > -1) {
 					xPausaError = true;
-					ListDocs[index].error = 1;
+					// ListDocs[index].error = 1;
+					item.error= 1;
 					xUpdateEstadoError(_id);
 					xErrorPrint(_id);
 					rpt_now = false;	
@@ -305,14 +307,16 @@ async function xSendPrintNow(_listSend, _id, index) {
 					xUpdateEstado(_id, _listSend.data.Array_enca.idpedido, _listSend);
 
 					try {
-						ListDocs[index].quitar_lista = 1;
-					} catch(err){console.log('isnul quitar_lista', ListDocs[index])};
+						item.quitar_lista = 1;
+						// ListDocs[index].quitar_lista = 1;
+					} catch(err){console.log('isnul quitar_lista', item)};
 					rpt_now = true;		
 				}
 			},
 			error: (e, textStatus, msj) => {				
 				xPausaError = true;
-				ListDocs[index].error = 1;				
+				item.error = 1;
+				// ListDocs[index].error = 1;				
 				xUpdateEstadoError(_id);
 				xErrorPrint(_id);
 				rpt_now = false;
@@ -410,9 +414,7 @@ function xUpdateEstado(_id, _idpedido = 0, _itemPrinter = null) {
 	// 	return;
 	// }
 
-	if ( isServerPrintSocket == 1 ) { 
-		emitPrinterFlagUpdate(_id);
-	}	
+	
 
 
 	// agregamos a la lista para actualizar su estado impreso					
@@ -430,6 +432,12 @@ function xUpdateEstado(_id, _idpedido = 0, _itemPrinter = null) {
 	// }
 
 	listOnlyPrinters.push(_dataPush);
+
+	if ( isServerPrintSocket == 1 ) { 				
+		emitPrinterFlagUpdate(_id);
+		emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+	}	
+	
 
 
 	xMarcarOkPedido(_id);
