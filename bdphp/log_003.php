@@ -101,7 +101,11 @@
 			// $bd->xConsulta_NoReturn($sql);
 
 			// guardar estado pedido como visto
-			$sqlB="update pedido set pwa_estado='A', is_printer = 1 where idpedido in(".$_POST['idpedido'].") and pwa_estado='P'; ";
+			if ( $_POST['idpedido'] !== '' ) {
+				$sqlB="update pedido set pwa_estado='A', is_printer = 1 where idpedido in(".$_POST['idpedido'].") and pwa_estado='P'; ";
+			} else {
+				$sqlB="";
+			}
 			// $sqlB="update pedido set is_printer = 1 where idpedido in(".$_POST['idpedido'].")";
 			$bd->xMultiConsulta($sqlA.$sqlB);
 			break;

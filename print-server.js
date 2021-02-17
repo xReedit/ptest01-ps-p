@@ -462,9 +462,13 @@ function xRunTimerUpdateEstado() {
 
 	const idsPrinterDetalle = listOnlyPrinters.map(x => x.idprint_server_detalle).join(',');
 	const idsPedidos = listOnlyPrinters.filter(x => x.idpedido !== 0).map(x => x.idpedido).join(',');
+	listOnlyPrinters = [];
 
-	console.log('paso a guardar',listOnlyPrinters);
-	emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+	// console.log('paso a guardar',listOnlyPrinters);
+	if ( isServerPrintSocket == 1 ) { 	
+		emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+	}
+	
 
 
 	$.ajax({
@@ -473,11 +477,11 @@ function xRunTimerUpdateEstado() {
 		data: { id: idsPrinterDetalle, idpedido: idsPedidos}
 	})
 	.done( (res)=> {
-		console.log(res);
+		console.log('update ok');
 
 		// xMarcarOkPedido(_id);
 		//  borrar lista
-		listOnlyPrinters = [];
+		// listOnlyPrinters = [];
 	});
 }
 
