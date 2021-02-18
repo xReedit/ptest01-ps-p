@@ -88,7 +88,7 @@
 			$idsede = $data['s'];
 			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
 
-			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId;
+			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId." limit 2";
 						
 			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
 			// echo $sql;

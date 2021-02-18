@@ -1,4 +1,4 @@
-let ListDocs = [], ListEstadistica = [], listOnlyPrinters = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {}, isServerPrintSocket=0;
+let ListDocs = [], ListEstadistica = [], listOnlyPrinters = [], ipUrlLocal='', IntervalClearCola = null, IntervalLoadCola, ultimoId = 0, ultimoIdData, valRows=0, xsourceEventCola, xPausaError = false, _data_o = {}, isServerPrintSocket=0, nIntervIdWS = null;
 
 $(document).ready(function() {
 	ultimoId=0;
@@ -58,6 +58,8 @@ function xIsPrinterSocket() {
 			openSocket();
 			console.log('ws', JSON.stringify(_data_o));
 			xInitPrintServer();
+
+			verificarConnectWS();
 			return;
 		}
 
@@ -594,6 +596,11 @@ function getUrlParameter(sParam,simbolo) {
 	for (var i = 0; i < sURLVariables.length; i++)
 		{ var sParameterName = sURLVariables[i].split('=');
 			if (sParameterName[0] == sParam) { return sParameterName[1]; } }
+}
+
+function verificarConnectWS() {
+	if ( nIntervIdWS ) { clearInterval(nIntervIdWS);}
+	nIntervIdWS = setInterval(verifyConexionSocket, 7000);
 }
 
 var groupBy = function (xs, key) {
