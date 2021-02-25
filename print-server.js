@@ -13,6 +13,7 @@ $(document).ready(function() {
 		
 });
 
+
 function getDataO() {
 	_data_o = getUrlParameter('o', '?');
 	_data_o = JSON.parse(atob(_data_o));
@@ -57,9 +58,10 @@ function xIsPrinterSocket() {
 			// verifica si hay impresiones pendientes
 			openSocket();
 			console.log('ws', JSON.stringify(_data_o));
-			xInitPrintServer();
+			// xInitPrintServer();
+			xVerificarColaImpresionMix();
 
-			verificarConnectWS();
+			// verificarConnectWS();
 			return;
 		}
 
@@ -72,6 +74,9 @@ function xIsPrinterSocket() {
 
 function _printerComanda(data) {
 	console.log('from socket');
+	// const _id = data.idprint_server_detalle;
+	ultimoId = data[0].idprint_server_detalle; // para busqueda impresion mix
+	setItemStorage(ultimoId);
 	tdRowsPrint(data);
 }
 
@@ -122,7 +127,7 @@ function tdRowsPrint(_ListDocumentos) {
 
 		xGenerarGrafico();
 
-		ultimoId = ultimoIdData;
+		// ultimoId = ultimoIdData;
 		xSendPrint();
 }
 // sockets 240920
@@ -139,6 +144,26 @@ function xVerificarColaImpresion(){
 			valRows = event.data === "" ? valRows : event.data;
 			if (parseInt(valRows) > parseInt(ultimoId)) {
 				console.log('not socket');
+				ultimoIdData = event.data;
+				xInitPrintServer();
+			}
+	        // if(event.data!==xValCountPedidos){xValCountPedidos=event.data;xActualizarItems();}
+	    };
+	}
+}
+
+
+// mix socket - 240221
+function xVerificarColaImpresionMix(){	
+	// console.log(JSON.stringify(_data_o));
+	// if ( isServerPrintSocket !== 0 ) { return;}
+	const _urlEvent = './bdphp/log_003.php?op=2011&u=' + ultimoId + '&data=' + JSON.stringify(_data_o);
+	if(typeof(EventSource) !== "undefined") {
+		xsourceEventCola = new EventSource(_urlEvent);
+		xsourceEventCola.onmessage = function(event) {
+			valRows = event.data === "" ? valRows : event.data;
+			if (parseInt(valRows) > parseInt(ultimoId)) {
+				console.log('socket mix');
 				ultimoIdData = event.data;
 				xInitPrintServer();
 			}
@@ -167,10 +192,22 @@ function xInitPrintServer() {
 		let cadena_tr = '';
 
 		_ListDocumentos.map((x, index)=>{
+
+			const id = x.idprint_server_detalle;
+
+			// verificar si ya imprimio
+			if (searhStorage(id)) { 
+				// update estado
+				onlyUpdateEstadoOk(id);
+				return; 
+			}
+
+			setItemStorage(id);
+
 			ListDocs.push(x);		
 			ListEstadistica.push(x);
 
-			const id = x.idprint_server_detalle;			
+						
 			let _detalle_json;
 			let _ip_print;
 			try {
@@ -300,8 +337,8 @@ async function xSendPrintNow(_listSend, _id, item) {
 				if(res.indexOf('Error, Verifique') > -1) {
 					xPausaError = true;
 					// ListDocs[index].error = 1;
-					item.error= 1;
-					xUpdateEstadoError(_id);
+					item.error= 1;					
+					xUpdateEstadoError(_id);					
 					xErrorPrint(_id);
 					rpt_now = false;	
 					console.log('error ', res);			
@@ -487,6 +524,19 @@ function xRunTimerUpdateEstado() {
 	});
 }
 
+function onlyUpdateEstadoOk(_id) {
+	$.ajax({
+		url: './bdphp/log_003.php?op=3',
+		type: 'POST',
+		data: { id: _id, idpedido: ''}
+	})
+	.done( (res)=> {
+		// xMarcarOkPedido(_id);
+		console.log('update estado', _id);
+
+	});
+}
+
 function xMarcarOkPedido(_id){
 	const nomTd = "#td_estado" + _id;
 	$(nomTd).text('Impreso');
@@ -504,7 +554,7 @@ function xUpdateEstadoError(_id) {
 		type: 'POST',
 		data: { id: _id}
 	}).done((x)=> {
-		// console.log(x);
+		// console.log('confirmacion flag',  x);
 	});
 }
 
@@ -598,10 +648,6 @@ function getUrlParameter(sParam,simbolo) {
 			if (sParameterName[0] == sParam) { return sParameterName[1]; } }
 }
 
-function verificarConnectWS() {
-	if ( nIntervIdWS ) { clearInterval(nIntervIdWS);}
-	nIntervIdWS = setInterval(verifyConexionSocket, 7000);
-}
 
 var groupBy = function (xs, key) {
 	return xs.reduce(function (rv, x) {

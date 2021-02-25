@@ -96,6 +96,21 @@
 			ob_flush();
 			flush();
 			break;
+		case '2011': //verificar si hay nuevos registros cada 20segundos
+			$UltimoId=$_GET['u'];
+			$data=json_decode($_GET['data'], true);
+			$idorg = $data['o'];
+			$idsede = $data['s'];
+			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
+
+			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId." limit 2";
+						
+			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
+			// echo $sql;
+			echo "retry: 20000\n"."data:".$numero_pedidos_actual."\n\n";
+			ob_flush();
+			flush();
+			break;
 		case '3': //guardar impreso=1
 			$sqlA="update print_server_detalle set impreso=1 where idprint_server_detalle in(".$_POST['id'].") and impreso = 0; ";
 			// $bd->xConsulta_NoReturn($sql);

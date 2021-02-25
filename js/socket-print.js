@@ -1,5 +1,5 @@
 
-var socketPrint, verificandoConexion=true;
+var socketPrint, verificandoConexion=true, keyStorage = 'sys_list';
 function openSocket(data) {
 	// socketPrint = io.connect('http://localhost:5819', {
 	socketPrint = io.connect('https://app.restobar.papaya.com.pe', {   
@@ -16,7 +16,7 @@ function openSocket(data) {
 	socketPrint.on('printerComanda', (data) => {   
 		// const _dataCocinada = data[0].data ? data[0].data.filter(x => x.print).map(x => x.print) : data[1].print;
 		// console.log('printerComanda data', data);
-    if ( !data.nom_documento ) {return; }
+    if ( !data.nom_documento ) {console.log('no paso', data); return; }
 
 		var _dataCocinada = [] ;
 		_dataCocinada.push(data);
@@ -28,7 +28,7 @@ function openSocket(data) {
 
 	socketPrint.on('printerOnly', (data) => {   
 		// console.log('printerOnly data', data);
-    if ( !data.nom_documento ) {return; }
+    if ( !data.nom_documento ) {console.log('no paso', data);  return; }
 		var _dataCocinada = [] ;
 		_dataCocinada.push(data);
 	    _printerComanda(_dataCocinada);	    
@@ -107,7 +107,7 @@ function emitPrinterFlagUpdate(id) {
 
 function verifyConexionSocket() {
     // console.log('verificando...');
-    // if ( verificandoConexion ) {return; }
+    if ( verificandoConexion ) {return; }
     verificandoConexion = true;
     socketPrint.emit('verificar-conexion', socketPrint.id);
   }
@@ -116,3 +116,47 @@ function closeSocket() {
     socketPrint.disconnect(true);
 }
 
+
+
+
+//// STORAGE PRINTER
+
+
+function setItemStorage(_id) {
+  var _list = getListStorage();
+
+  _list.push({id: _id});
+
+  setListStorage(_list);
+
+}
+
+function setListStorage(_list) {
+  localStorage.setItem(keyStorage, JSON.stringify(_list));
+
+  clearStorage();
+}
+
+function searhStorage(_id) {
+  var _list = getListStorage();  
+  return !!_list.filter(i => i.id === _id)[0];
+}
+
+function clearStorage() {
+  var _list = getListStorage();  
+
+  if ( _list.length > 100 ) {
+    const idMax = _list[80].id;
+    _list = _list.filter(i => i.id > idMax);
+    setListStorage(_list);
+  }
+}
+
+
+function getListStorage() {
+  var _list = localStorage.getItem(keyStorage);
+  return _list ? JSON.parse(_list) : [];  
+}
+
+
+//// STORAGE PRINTER -->>>
