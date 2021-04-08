@@ -161,12 +161,17 @@ function xVerificarColaImpresionMix(){
 	if(typeof(EventSource) !== "undefined") {
 		xsourceEventCola = new EventSource(_urlEvent);
 		xsourceEventCola.onmessage = function(event) {
-			valRows = event.data === "" ? valRows : event.data;
-			if (parseInt(valRows) > parseInt(ultimoId)) {
-				console.log('socket mix');
-				ultimoIdData = event.data;
-				xInitPrintServer();
-			}
+			// valRows = event.data === "" ? valRows : event.data;
+			// if (parseInt(valRows) > parseInt(ultimoId)) {
+				console.log('socket mix', event.data);
+				const _res = JSON.parse(event.data);
+				if ( _res.length > 0 ) {
+					let _ListDocumentos = _res;
+					processPrintToList(_ListDocumentos);
+				}
+				// ultimoIdData = event.data;
+				// xInitPrintServer();
+			// }
 	        // if(event.data!==xValCountPedidos){xValCountPedidos=event.data;xActualizarItems();}
 	    };
 	}
@@ -256,6 +261,77 @@ function xInitPrintServer() {
 		ultimoId = ultimoIdData;
 		xSendPrint();
 	});	  
+}
+
+function processPrintToList(_ListDocumentos) {
+	/// agregar a la lista
+		let row = ListDocs.length;
+		let cadena_tr = '';
+
+		_ListDocumentos.map((x, index)=>{
+
+			const id = x.idprint_server_detalle;
+
+			// verificar si ya imprimio
+			if (searhStorage(id)) { 
+				// update estado
+				onlyUpdateEstadoOk(id);
+				return; 
+			}
+
+			setItemStorage(id);
+
+			ListDocs.push(x);		
+			ListEstadistica.push(x);
+
+						
+			let _detalle_json;
+			let _ip_print;
+			try {
+				_detalle_json = JSON.parse(x.detalle_json);
+				_ip_print = _detalle_json.Array_print[0].ip_print
+				
+			} catch (error) {
+				try {
+					_detalle_json = JSON.parse(x.detalle_json.replace('"{', '{').replace('}"', '}'));
+					_ip_print = _detalle_json.Array_print[0].ip_print
+				}	
+				catch (error) {  
+					_detalle_json = null; 
+					_ip_print = 'error' 
+					console.log('log ', x.detalle_json);
+				}
+			}
+
+			row++;
+			cadena_tr += '<tr id="tr' + id +'">'+
+				'<td>'+ row +'</td>'+
+				'<td>' + x.hora + '</td>' +
+				'<td>' + x.descripcion_doc + '</td>' +
+				'<td>' + _ip_print + '</td>' +
+				'<td id="td_estado' + id +'">Pendiente</td>' +
+			'</tr>';
+		});
+
+		xGenerarGrafico();
+
+
+		// let cadena_tr = '';				
+		// _ListDocumentos.map((x, index) => {			
+		// 	const id = x.idprint_server_detalle;			
+		// 	row++;
+		// 	cadena_tr += '<tr id="tr' + id +'">'+
+		// 		'<td>'+ row +'</td>'+
+		// 		'<td>' + x.hora + '</td>' +
+		// 		'<td>' + x.descripcion_doc + '</td>' +
+		// 		'<td id="td_estado' + id +'">Pendiente</td>' +
+		// 	'</tr>';
+		// });
+
+		$("#listDoc").append(cadena_tr).trigger('create');
+
+		ultimoId = ultimoIdData;
+		xSendPrint();
 }
 
 async function xSendPrint() {

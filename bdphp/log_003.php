@@ -71,13 +71,19 @@
 
 			// 091220 solo los ultimos 5minutos
 			// and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 5
+
+			// para atender las reservas que se hagan antes de horario de atencion
+			// estas se imprimiran cuando inicia el servidor de impresion
+			// or (psd.isreserva = 1 and psd.impreso = 0)
 			
 			$sql="SELECT psd.*, pse.estructura_json, pse.nom_documento
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
 					WHERE (psd.idorg=$ido and psd.idsede=$idsede and psd.impreso=0) 
-						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 10
-						and psd.estado=0 ".$UltimoId." ORDER BY psd.idprint_server_detalle DESC";
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 20
+						and psd.estado=0 ".$UltimoId."
+						or (psd.isreserva = 1 and psd.impreso = 0)
+					ORDER BY psd.idprint_server_detalle DESC";
 			
 			$bd->xConsulta($sql);
 			break;
@@ -96,18 +102,34 @@
 			ob_flush();
 			flush();
 			break;
-		case '2011': //verificar si hay nuevos registros cada 20segundos
+
+			//verificar si hay nuevos registros cada 20segundos
+			// 080421 se requiere verificar los que NO fueron impresos por socket
+		case '2011': 
 			$UltimoId=$_GET['u'];
 			$data=json_decode($_GET['data'], true);
 			$idorg = $data['o'];
 			$idsede = $data['s'];
-			if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
 
-			$sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId." limit 2";
+			// if ( $UltimoId!='' ) { $UltimoId=' and idprint_server_detalle >'.$UltimoId.' '; }
+
+			// $sql="SELECT MAX(idprint_server_detalle) FROM print_server_detalle where (idsede=$idsede and impreso=0)".$UltimoId." limit 2";
 						
-			$numero_pedidos_actual=$bd->xDevolverUnDato($sql);
+			// $numero_pedidos_actual=$bd->xDevolverUnDato($sql);
+
+			$sql="SELECT psd.*, pse.estructura_json, pse.nom_documento
+						FROM print_server_detalle as psd
+							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
+					WHERE (psd.idsede=$idsede and psd.impreso=0) 
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 20
+						and psd.estado=0 and psd.idprint_server_detalle>0
+						or (psd.isreserva = 1 and psd.impreso = 0)
+					ORDER BY psd.idprint_server_detalle DESC";
+			
+			$dataRpt = $bd->xConsulta3($sql);
+
 			// echo $sql;
-			echo "retry: 20000\n"."data:".$numero_pedidos_actual."\n\n";
+			echo "retry: 20000\n"."data:".$dataRpt."\n\n";
 			ob_flush();
 			flush();
 			break;
