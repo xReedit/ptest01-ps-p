@@ -139,7 +139,7 @@ function setListStorage(_list) {
 
 function searhStorage(_id) {
   var _list = getListStorage();  
-  return !!_list.filter(i => i.id === _id)[0];
+  return !!_list.filter(i => parseInt(i.id) === parseInt(_id))[0];
 }
 
 function clearStorage() {
