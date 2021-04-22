@@ -167,7 +167,9 @@ function xVerificarColaImpresionMix(){
 				const _res = JSON.parse(event.data);
 				if ( _res.length > 0 ) {
 					let _ListDocumentos = _res;
-					processPrintToList(_ListDocumentos);
+					setTimeout(() => {
+						processPrintToList(_ListDocumentos);
+					}, 2000)					
 				}
 				// ultimoIdData = event.data;
 				// xInitPrintServer();
