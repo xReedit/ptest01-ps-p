@@ -552,7 +552,7 @@ function xUpdateEstado(_id, _idpedido = 0, _itemPrinter = null) {
 
 	if ( isServerPrintSocket == 1 ) { 				
 		emitPrinterFlagUpdate(_id);
-		emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+		emitPrinterFlag(_idpedido);
 	}	
 	
 
@@ -583,7 +583,8 @@ function xRunTimerUpdateEstado() {
 
 	// console.log('paso a guardar',listOnlyPrinters);
 	if ( isServerPrintSocket == 1 ) { 	
-		emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+		// emitPrinterFlag(JSON.stringify(listOnlyPrinters));
+		emitPrinterFlag(idsPedidos);
 	}
 	
 
