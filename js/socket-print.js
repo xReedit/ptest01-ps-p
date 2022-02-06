@@ -1,8 +1,8 @@
 
 var socketPrint, verificandoConexion=true, keyStorage = 'sys_list';
 function openSocket(data) {
-	// socketPrint = io.connect('http://localhost:5819', {
-	socketPrint = io.connect('https://app.restobar.papaya.com.pe', {   
+	socketPrint = io.connect('http://localhost:5819', {
+	// socketPrint = io.connect('https://app.restobar.papaya.com.pe', {   
     	query: {
     		idorg: _data_o.o,
     		idsede: _data_o.s,
@@ -123,9 +123,13 @@ function closeSocket() {
 
 
 function setItemStorage(_id) {
+
+  const itemStorage = searhItemIsPrinterStorage(_id);
+  if (itemStorage) { return; }
+
   var _list = getListStorage();
 
-  _list.push({id: _id});
+  _list.push({id: _id, printed: true});
 
   setListStorage(_list);
 
@@ -137,9 +141,24 @@ function setListStorage(_list) {
   clearStorage();
 }
 
+// busca para ver si imprimio
+function searhItemIsPrinterStorage(_id) {
+  var _list = getListStorage();  
+  return _list.filter(i => parseInt(i.id) === parseInt(_id))[0];
+  // var itemStorage = searhStorage(_id);
+  // return itemStorage?.printed || false;
+}
+
 function searhStorage(_id) {
   var _list = getListStorage();  
-  return !!_list.filter(i => parseInt(i.id) === parseInt(_id))[0];
+  return _list.filter(i => parseInt(i.id) === parseInt(_id))[0];
+}
+
+function noPrintItemStorage(_id) {  
+  var _list = getListStorage(); 
+  var itemStorage = _list.filter(i => parseInt(i.id) === parseInt(_id))[0];
+  itemStorage.printed = false;
+  setListStorage(_list);
 }
 
 function clearStorage() {

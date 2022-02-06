@@ -2,6 +2,7 @@
 	//log registrar el print server
 	session_start();	
 	header('Access-Control-Allow-Origin: *'); 
+	 // header("Set-Cookie: samesite-test=1; expires=0; path=/; samesite=None");
 	header('content-type: text/html; charset: utf-8');
 	header('Content-Type: text/event-stream');
 	header('Cache-Control: no-cache');
@@ -121,7 +122,7 @@
 						FROM print_server_detalle as psd
 							INNER JOIN print_server_estructura as pse on pse.idprint_server_estructura = psd.idprint_server_estructura							
 					WHERE (psd.idsede=$idsede and psd.impreso=0) 
-						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 20
+						and  TIMESTAMPDIFF(MINUTE, STR_TO_DATE(concat(psd.fecha, ' ', psd.hora), '%d/%m/%Y %H:%i:%s'),DATE_FORMAT(now(), '%Y-%m-%d %H:%i:%s')) < 30
 						and psd.estado=0 and psd.idprint_server_detalle>0
 						or (psd.isreserva = 1 and psd.impreso = 0)
 					ORDER BY psd.idprint_server_detalle DESC";
@@ -150,8 +151,8 @@
 			$sql="update print_server_detalle set estado=1 where idprint_server_detalle in (".$_POST['id'].")";
 			$bd->xConsulta_NoReturn($sql);
 			break;
-		case '302': //guardar impreso=1
-			$sql="update print_server_detalle set error=1 where idprint_server_detalle=".$_POST['id'];
+		case '302': //guardar error
+			$sql="update print_server_detalle set error=1, impreso = 0 where idprint_server_detalle=".$_POST['id'];
 			$bd->xConsulta_NoReturn($sql);
 			break;
 		case '4': // list estructuras

@@ -203,10 +203,21 @@ function xInitPrintServer() {
 			const id = x.idprint_server_detalle;
 
 			// verificar si ya imprimio
-			if (searhStorage(id)) { 
+			// if (searhItemIsPrinterStorage(id)) { 
+			// 	// update estado
+			// 	onlyUpdateEstadoOk(id);
+			// 	return; 
+			// }
+			const itemInStorage = searhItemIsPrinterStorage(id);
+			if (itemInStorage) { 
 				// update estado
-				onlyUpdateEstadoOk(id);
-				return; 
+				if ( itemInStorage.printed ) {
+					onlyUpdateEstadoOk(id);
+				} else {
+					// buscamos si esta en lista
+					const itemInList = ListDocs.length > 0 ? ListDocs.find(x => x.idprint_server_detalle === id) : null;
+					if (itemInList) {return; }					
+				}								
 			}
 
 			setItemStorage(id);
@@ -275,10 +286,16 @@ function processPrintToList(_ListDocumentos) {
 			const id = x.idprint_server_detalle;
 
 			// verificar si ya imprimio
-			if (searhStorage(id)) { 
+			const itemInStorage = searhItemIsPrinterStorage(id);
+			if (itemInStorage) { 
 				// update estado
-				onlyUpdateEstadoOk(id);
-				return; 
+				if ( itemInStorage.printed ) {
+					onlyUpdateEstadoOk(id);
+				} else {
+					// buscamos si esta en lista
+					const itemInList = ListDocs.length > 0 ? ListDocs.find(x => x.idprint_server_detalle === id) : null;
+					if (itemInList) {return; }	
+				}
 			}
 
 			setItemStorage(id);
@@ -301,7 +318,7 @@ function processPrintToList(_ListDocumentos) {
 				catch (error) {  
 					_detalle_json = null; 
 					_ip_print = 'error' 
-					console.log('log ', x.detalle_json);
+					// console.log('log ', x.detalle_json);
 				}
 			}
 
@@ -396,7 +413,7 @@ async function xSendPrint() {
 		// 	// return false;
 		// });
 
-		console.log('rpt_p', rpt_p);
+		// console.log('rpt_p', rpt_p);
 
 		
 	};
@@ -410,6 +427,7 @@ async function xSendPrintNow(_listSend, _id, item) {
 			url: ipUrlLocal + '/restobar/print/client/' + nomFile,
 			type: 'POST',
 			timeout: 9000,
+			crossDomain: true,
 			data: { arrData: JSON.stringify(_listSend) },
 			success: (res) => {
 				if(res.indexOf('Error, Verifique') > -1) {
@@ -628,6 +646,10 @@ function xMarcarOkPedido(_id){
 
 function xUpdateEstadoError(_id) {
 	// const _id = ListDocs[_index].idprint_server_detalle;	
+
+	// quitar de lista storage si estuviera
+	noPrintItemStorage(_id);
+
 	$.ajax({
 		url: './bdphp/log_003.php?op=302',
 		type: 'POST',

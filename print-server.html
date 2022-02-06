@@ -54,7 +54,14 @@
 			<div class="x_div_linea">
 				<div class="xitem1 xBordeDe">
 					<div class="xInvisible" id="div_error">
-						<h3 class="xColorRow_Rojo">Existe un error con los datos (JSON) o con la impresora: Verifique el ip, que este prendida y que tenga papel.</h3>
+						<div>
+							<h3 class="xColorRow_Rojo">Existe un error, verifque:</h3>
+							<p><strong>1.</strong> Que la impresora este encendida, conectada y que tenga papel.</p>
+							<p><strong>2.</strong> Que este ejecuntadose Laragon. <img width="150px" src="./run_laragon.jpg"></p>
+							<p><strong>3.</strong> Si Laragon <strong>no</strong> esta ejecutandose de doble click en el icono que esta en su escritorio.</p>		
+							<img width="35px" src="./icon_laragon.JPG">	
+						</div>
+						<br>
 						<button class="xBoton2 xVerde" onclick="xIntentarImprimirNuevamente();">Intentar nuevamente</button>
 						<button class="xBoton2 xRojo" onclick="xEliminarPedidosError();">Eliminar comandas con error</button><br><br>
 					</div>
